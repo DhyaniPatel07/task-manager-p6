@@ -4,6 +4,9 @@ const cors     = require("cors");
 const NodeCache = require("node-cache");
 require("dotenv").config();
 
+// P10: EventEmitter for Event-Driven Task Management
+const taskEvents = require("./events/taskEvents");
+
 const app = express();
 
 // Expose X-Cache-Status so browsers and Postman can read it as a response header
@@ -40,11 +43,55 @@ const taskSchema = new mongoose.Schema({
     },
     status: {
         type: String,
+        enum: ["Pending", "In Progress", "Completed"],
         default: "Pending"
+    },
+    priority: {
+        type: String,
+        enum: ["Low", "Medium", "High"],
+        default: "Medium"
+    },
+    dueDate: {
+        type: Date,
+        default: null
     }
-});
+}, { timestamps: true });
 
 const Task = mongoose.model("Task", taskSchema);
+
+
+// ─── GET /tasks/stats — Real-time dashboard statistics ───────────────────────
+app.get("/tasks/stats", async (req, res) => {
+    try {
+        const [total, completed, pending, inProgress] = await Promise.all([
+            Task.countDocuments(),
+            Task.countDocuments({ status: "Completed" }),
+            Task.countDocuments({ status: "Pending" }),
+            Task.countDocuments({ status: "In Progress" })
+        ]);
+
+        const completionRate = total > 0
+            ? Math.round((completed / total) * 100)
+            : 0;
+
+        // Recent 5 tasks for activity feed
+        const recent = await Task.find()
+            .sort({ createdAt: -1 })
+            .limit(5)
+            .select("title status priority createdAt");
+
+        res.status(200).json({
+            total,
+            completed,
+            pending,
+            inProgress,
+            completionRate,
+            recent
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
 
 
 // ─── GET - View all tasks (with caching) ─────────────────────────────────────
@@ -82,7 +129,7 @@ app.get("/tasks", async (req, res) => {
 // ─── POST - Create task ───────────────────────────────────────────────────────
 app.post("/tasks", async (req, res) => {
     try {
-        const { title, description, status } = req.body;
+        const { title, description, status, priority, dueDate } = req.body;
 
         if (!title) {
             return res.status(400).json({
@@ -93,12 +140,17 @@ app.post("/tasks", async (req, res) => {
         const task = await Task.create({
             title,
             description,
-            status
+            status,
+            priority,
+            dueDate: dueDate || null
         });
 
         // Invalidate cache so next GET fetches fresh data
         cache.del(CACHE_KEY);
         console.log("[CACHE INVALIDATED] POST /tasks — cache cleared");
+
+        // P10: Emit task-created event (non-blocking)
+        taskEvents.emit("task-created", task);
 
         res.status(201).json(task);
     } catch (error) {
@@ -148,6 +200,9 @@ app.delete("/tasks/:id", async (req, res) => {
         cache.del(CACHE_KEY);
         console.log(`[CACHE INVALIDATED] DELETE /tasks/${req.params.id} — cache cleared`);
 
+        // P10: Emit task-deleted event
+        taskEvents.emit("task-deleted", task);
+
         res.status(200).json({
             message: "Task deleted successfully"
         });
@@ -174,6 +229,15 @@ app.get("/cache-stats", (req, res) => {
         ksize       : nodeStats.ksize,
         vsize       : nodeStats.vsize,
         ttl_seconds : 60
+    });
+});
+
+
+// ─── GET /tasks/test-event-error — P10 Error handling test endpoint ────────
+app.get("/tasks/test-event-error", (req, res) => {
+    taskEvents.emit("error", new Error("Simulated test event error (Practical 10 proof)"));
+    res.status(200).json({
+        message: "EventEmitter error emitted and safely handled by listener without server crash."
     });
 });
 
