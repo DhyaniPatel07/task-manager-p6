@@ -42,7 +42,7 @@ export default function AboutPage() {
             <li>✅ P8 — React.lazy() + Suspense (route-based code splitting)</li>
             <li>✅ P9 — In-memory caching with node-cache (TTL 60 s)</li>
             <li>✅ P10 — Event-Driven Architecture (Node.js EventEmitter)</li>
-            <li>🔜 P11 — Docker</li>
+            <li>✅ P11 — Docker Multi-Container Orchestration</li>
             <li>🔜 P12 — GitHub Actions CI/CD</li>
             <li>🔜 P13 — AI task description generation</li>
           </ul>
@@ -50,11 +50,12 @@ export default function AboutPage() {
 
         <div className="card">
           <div className="card-header">
-            <h3 className="card-title">Events & Caching (P9 & P10)</h3>
+            <h3 className="card-title">Docker Architecture (P11)</h3>
           </div>
           <p className="about-text">
-            <strong>P9:</strong> In-memory cache (<code>node-cache</code>, TTL 60s) with <code>X-Cache-Status: HIT | MISS</code> and cache invalidation.<br /><br />
-            <strong>P10:</strong> Node.js <code>EventEmitter</code> listens for <code>task-created</code> (with non-blocking 2-second background processing) and <code>task-deleted</code> events.
+            <strong>Frontend:</strong> Multi-stage build served on port 3000 via Nginx with SPA routing.<br /><br />
+            <strong>Backend:</strong> Node.js container on port 5000 with healthcheck dependencies.<br /><br />
+            <strong>Database:</strong> MongoDB 7.0 container with persistent named volume <code>mongodb_data</code>.
           </p>
         </div>
       </div>

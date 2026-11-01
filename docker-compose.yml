@@ -1,0 +1,71 @@
+version: '3.8'
+
+# ─── Practical 11: Multi-Container Docker Architecture ────────────────────────
+# Services:
+#   1. mongodb  - Database with persistent named volume
+#   2. backend  - Node.js Express REST API connected to mongodb container
+#   3. frontend - React/Vite SPA served via Nginx production web server
+
+services:
+  # Database Service
+  mongodb:
+    image: mongo:7.0
+    container_name: taskmanager-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - taskflow-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # Backend API Service
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: taskmanager-backend
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      - PORT=5000
+      - MONGO_URI=mongodb://mongodb:27017/taskmanager
+      - NODE_ENV=production
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - taskflow-network
+
+  # Frontend Web Service
+  frontend:
+    build:
+      context: ./frontend/template
+      dockerfile: Dockerfile
+    container_name: taskmanager-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - taskflow-network
+
+# Named volume for persistent database storage
+volumes:
+  mongodb_data:
+    name: taskmanager_mongodb_data
+
+# Shared bridge network for secure container-to-container communication
+networks:
+  taskflow-network:
+    name: taskmanager_network
+    driver: bridge
+
