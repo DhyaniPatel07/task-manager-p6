@@ -1,63 +1,57 @@
-import { lazy, Suspense } from "react";
-import { BrowserRouter, Routes, Route, NavLink } from "react-router-dom";
+import { lazy, Suspense, useState } from "react";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import "./App.css";
 
-// ---------------------------------------------------------------------------
-// Route-based lazy loading with React.lazy()
-// Each page is loaded as a separate JS chunk on demand.
-// ---------------------------------------------------------------------------
-const TaskListPage = lazy(() => import("./pages/TaskListPage"));
-const AddTaskPage  = lazy(() => import("./pages/AddTaskPage"));
-const AboutPage    = lazy(() => import("./pages/AboutPage"));
+import Sidebar from "./components/Layout/Sidebar";
+import TopBar  from "./components/Layout/TopBar";
+import Spinner from "./components/UI/Spinner";
 
-// ---------------------------------------------------------------------------
-// Loading fallback shown by Suspense while a chunk is being fetched
-// ---------------------------------------------------------------------------
-function PageLoader() {
+// ── P8: Route-based lazy loading with React.lazy() ───────────────────────────
+const DashboardPage = lazy(() => import("./pages/DashboardPage"));
+const TasksPage     = lazy(() => import("./pages/TasksPage"));
+const AboutPage     = lazy(() => import("./pages/AboutPage"));
+
+// Map route paths → page titles shown in TopBar
+const PAGE_TITLES = {
+  "/":       "Dashboard",
+  "/tasks":  "Tasks",
+  "/about":  "About",
+};
+
+function Layout() {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const location = useLocation();
+  const title = PAGE_TITLES[location.pathname] ?? "TaskFlow";
+
   return (
-    <div style={{ padding: "2rem", textAlign: "center" }}>
-      <p>⏳ Loading page, please wait…</p>
+    <div className="app-shell">
+      <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+
+      <div className="app-main">
+        <TopBar title={title} onMenuClick={() => setSidebarOpen(o => !o)} />
+
+        {/* P8: Suspense fallback while lazy chunk downloads */}
+        <Suspense fallback={
+          <div className="page-loading">
+            <Spinner size={48} />
+            <p>Loading page…</p>
+          </div>
+        }>
+          <Routes>
+            <Route path="/"      element={<DashboardPage />} />
+            <Route path="/tasks" element={<TasksPage />}     />
+            <Route path="/about" element={<AboutPage />}     />
+          </Routes>
+        </Suspense>
+      </div>
     </div>
   );
 }
 
-// ---------------------------------------------------------------------------
-// App
-// ---------------------------------------------------------------------------
-function App() {
+export default function App() {
   return (
     <BrowserRouter>
-      <div className="container">
-        <h1>Task Management System</h1>
-
-        {/* Navigation */}
-        <nav style={{ marginBottom: "1.5rem" }}>
-          <NavLink to="/"        end style={navStyle}>Task List</NavLink>
-          <NavLink to="/add"         style={navStyle}>Add Task</NavLink>
-          <NavLink to="/about"       style={navStyle}>About</NavLink>
-        </nav>
-
-        {/* Suspense wraps all lazy routes so the fallback renders while
-            the matching chunk is downloaded. */}
-        <Suspense fallback={<PageLoader />}>
-          <Routes>
-            <Route path="/"      element={<TaskListPage />} />
-            <Route path="/add"   element={<AddTaskPage />} />
-            <Route path="/about" element={<AboutPage />} />
-          </Routes>
-        </Suspense>
-      </div>
+      <Layout />
     </BrowserRouter>
   );
 }
-
-// Inline style helper for nav links
-function navStyle({ isActive }) {
-  return {
-    marginRight: "1rem",
-    fontWeight: isActive ? "bold" : "normal",
-    textDecoration: isActive ? "underline" : "none",
-  };
-}
-
-export default App;

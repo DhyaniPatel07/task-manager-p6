@@ -1,18 +1,63 @@
-function AboutPage() {
+export default function AboutPage() {
   return (
-    <div>
-      <h2>About</h2>
-      <p>
-        This is the <strong>Task Management System</strong> — a full-stack app
-        built with React (frontend) and Node.js / Express / MongoDB (backend).
-      </p>
-      <p>
-        Use the <strong>Add Task</strong> page to create tasks, and the{" "}
-        <strong>Task List</strong> page to view, update, or delete them.
-      </p>
+    <div className="page">
+      <div className="page-header">
+        <div>
+          <h2 className="page-title">About</h2>
+          <p className="page-sub">Task Manager — University Practical Project</p>
+        </div>
+      </div>
+
+      <div className="about-grid">
+        <div className="card">
+          <div className="card-header">
+            <h3 className="card-title">Project Overview</h3>
+          </div>
+          <p className="about-text">
+            A full-stack MERN task management application built for the
+            Web Development Fundamentals practical series (P6–P13).
+          </p>
+        </div>
+
+        <div className="card">
+          <div className="card-header">
+            <h3 className="card-title">Tech Stack</h3>
+          </div>
+          <ul className="about-list">
+            <li><span className="about-tech">MongoDB</span> — document database</li>
+            <li><span className="about-tech">Express 5</span> — REST API server</li>
+            <li><span className="about-tech">React 19</span> — UI library</li>
+            <li><span className="about-tech">Node.js</span> — runtime</li>
+            <li><span className="about-tech">Vite 8</span> — build tool</li>
+            <li><span className="about-tech">React Router 7</span> — routing</li>
+          </ul>
+        </div>
+
+        <div className="card">
+          <div className="card-header">
+            <h3 className="card-title">Practicals Implemented</h3>
+          </div>
+          <ul className="about-list">
+            <li>✅ P7 — MERN CRUD API</li>
+            <li>✅ P8 — React.lazy() + Suspense (route-based code splitting)</li>
+            <li>✅ P9 — In-memory caching with node-cache (TTL 60 s)</li>
+            <li>✅ P10 — Event-Driven Architecture (Node.js EventEmitter)</li>
+            <li>🔜 P11 — Docker</li>
+            <li>🔜 P12 — GitHub Actions CI/CD</li>
+            <li>🔜 P13 — AI task description generation</li>
+          </ul>
+        </div>
+
+        <div className="card">
+          <div className="card-header">
+            <h3 className="card-title">Events & Caching (P9 & P10)</h3>
+          </div>
+          <p className="about-text">
+            <strong>P9:</strong> In-memory cache (<code>node-cache</code>, TTL 60s) with <code>X-Cache-Status: HIT | MISS</code> and cache invalidation.<br /><br />
+            <strong>P10:</strong> Node.js <code>EventEmitter</code> listens for <code>task-created</code> (with non-blocking 2-second background processing) and <code>task-deleted</code> events.
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
-
-export default AboutPage;
-
