@@ -43,9 +43,20 @@ export default function AboutPage() {
             <li>✅ P9 — In-memory caching with node-cache (TTL 60 s)</li>
             <li>✅ P10 — Event-Driven Architecture (Node.js EventEmitter)</li>
             <li>✅ P11 — Docker Multi-Container Orchestration</li>
-            <li>🔜 P12 — GitHub Actions CI/CD</li>
+            <li>✅ P12 — GitHub Actions CI/CD Pipeline</li>
             <li>🔜 P13 — AI task description generation</li>
           </ul>
+        </div>
+
+        <div className="card">
+          <div className="card-header">
+            <h3 className="card-title">CI/CD Pipeline (P12)</h3>
+          </div>
+          <p className="about-text">
+            <strong>Workflow:</strong> <code>.github/workflows/ci.yml</code><br />
+            <strong>Backend CI:</strong> <code>npm ci</code> &rarr; Jest + Supertest integration tests.<br />
+            <strong>Frontend CI:</strong> <code>npm ci</code> &rarr; Vite production build verification.
+          </p>
         </div>
 
         <div className="card">
